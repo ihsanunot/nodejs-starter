@@ -1,45 +1,39 @@
-# Membuat HTTP Server
+# Method/Verb Request
 
-Node.js menyediakan core modules http untuk membangun web server. 
+Web server yang sudah kita buat pada latihan sebelumnya sudah berhasil merespons dan menampilkan data dalam dokumen HTML.
+
+Server kita saat ini tidak peduli permintaan datang seperti apa, dia akan mengembalikan data yang sama. Anda bisa mencobanya sendiri melalui cURL dengan menggunakan HTTP method yang berbeda.
+
+Hal tersebut wajar karena kita memang belum menuliskan logika dalam menangani permintaan dari method yang berbeda. Lalu, bagaimana caranya agar bisa melakukan hal tersebut?
+
+Fungsi request listener menyediakan dua parameter yakni request dan response. Fokus ke parameter request, parameter ini merupakan instance dari http.ClientRequest yang memiliki banyak properti di dalamnya. 
+
+Melalui properti-propertinya ini kita dapat mengetahui seperti apa karakteristik dari permintaan HTTP yang dilakukan oleh client. Seperti method yang digunakan, path atau alamat yang dituju, data yang dikirimkan (bila ada), dan informasi lain mengenai permintaan tersebut.
+
+Untuk mendapatkan nilai method dari request, gunakanlah properti request.method seperti ini:
 
 ```
-const http = require('http'); 
-```
-
-HTTP module memiliki banyak member seperti objek, properti, atau method yang berguna untuk melakukan hal-hal terkait protokol HTTP. Salah satu member yang penting untuk kita ketahui sekarang adalah method http.createServer().
-
-Sesuai namanya, method ini berfungsi untuk membuat HTTP server yang merupakan instance dari http.server. Method ini menerima satu parameter custom callback yang digunakan sebagai request listener. Di dalam request listener inilah logika untuk menangani dan menanggapi sebuah request dituliskan.
-
-```
-const http = require('http');
- 
-/**
- * Logika untuk menangani dan menanggapi request dituliskan pada fungsi ini
- * 
- * @param request: objek yang berisikan informasi terkait permintaan
- * @param response: objek yang digunakan untuk menanggapi permintaan
- */
 const requestListener = (request, response) => {
-    
+    const method = request.method;
 };
- 
-const server = http.createServer(requestListener);
 ```
 
-Request listener memiliki 2 parameter, yakni request dan response. Seperti yang tertulis pada contoh kode di atas, request merupakan objek yang menyimpan informasi terkait permintaan yang dikirimkan oleh client. Di dalam objek ini kita bisa melihat alamat yang diminta, data yang dikirim, ataupun HTTP metode yang digunakan oleh client.
+Properti method bernilai tipe method dalam bentuk string. Nilainya dapat berupa “GET”, “POST”, “PUT”, atau method lainnya sesuai dengan yang client gunakan ketika melakukan permintaan. Dengan memiliki nilai method, kita bisa memberikan respons berbeda berdasarkan tipe method-nya.
 
-Sementara itu, response merupakan objek yang digunakan untuk menanggapi permintaan. Melalui objek ini kita bisa menentukan data yang diberikan, format dokumen yang digunakan, kode status, atau informasi response lainnya.
+```
+const requestListener = (request, response) => {
+    const { method } = request;
+ 
+    if(method === 'GET') {
+        // response ketika GET
+    }
+ 
+    if(method === 'POST') {
+        // response ketika POST
+    }
+ 
+    // Anda bisa mengevaluasi tipe method lainnya
+};
+```
 
-Kode di atas merupakan contoh logika yang bisa dituliskan di dalam request listener. Request listener akan menanggapi setiap permintaan dengan dokumen HTML, kode status 200, dan menampilkan konten “Halo HTTP Server!”.
-
-Lalu, bagaimana caranya agar server selalu sedia menangani permintaan yang masuk? Setiap instance dari http.server juga memiliki method listen(). Method inilah yang membuat http.server selalu standby untuk menangani permintaan yang masuk dari client. Setiap kali ada permintaan yang masuk, request listener akan tereksekusi.
-
-Method listen() dapat menerima 4 parameter, berikut detailnya:
-
-port (number) : jalur yang digunakan untuk mengakses HTTP server.
-hostname (string) : nama domain yang digunakan oleh HTTP server.
-backlog (number) : maksimal koneksi yang dapat ditunda (pending) pada HTTP server.
-listeningListener (function) : callback yang akan terpanggil ketika HTTP server sedang bekerja (listening).
-
-Namun, keempat parameter di atas bersifat opsional. Kita bisa memberikan nilai port saja, atau kombinasi apa pun dari keempatnya. Hal itu tergantung terhadap kebutuhan Anda.
-
+Sekali lagi, tidak hanya properti method, objek request kaya akan properti dan fungsi lain di dalamnya. Anda dapat mengeksplorasi properti atau fungsi lainnya pada halaman dokumentasi Node.js tentang HTTP Client Request.
