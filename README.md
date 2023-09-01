@@ -1,39 +1,42 @@
-# Method/Verb Request
+# Body Request
 
-Web server yang sudah kita buat pada latihan sebelumnya sudah berhasil merespons dan menampilkan data dalam dokumen HTML.
+Ketika client melakukan permintaan dengan method POST atau PUT, biasanya permintaan tersebut memiliki sebuah data yang disimpan pada body request. 
 
-Server kita saat ini tidak peduli permintaan datang seperti apa, dia akan mengembalikan data yang sama. Anda bisa mencobanya sendiri melalui cURL dengan menggunakan HTTP method yang berbeda.
+Data pada body bisa berupa format teks, JSON, berkas gambar, atau format lainnya. Data tersebut nantinya digunakan oleh server untuk diproses di database atau disimpan dalam bentuk objek utuh.
 
-Hal tersebut wajar karena kita memang belum menuliskan logika dalam menangani permintaan dari method yang berbeda. Lalu, bagaimana caranya agar bisa melakukan hal tersebut?
 
-Fungsi request listener menyediakan dua parameter yakni request dan response. Fokus ke parameter request, parameter ini merupakan instance dari http.ClientRequest yang memiliki banyak properti di dalamnya. 
+Ketahuilah bahwa http.clientRequest merupakan turunan dari readable stream, yang di mana untuk mendapatkan data body akan sedikit sulit dibandingkan dengan mendapatkan data header.
 
-Melalui properti-propertinya ini kita dapat mengetahui seperti apa karakteristik dari permintaan HTTP yang dilakukan oleh client. Seperti method yang digunakan, path atau alamat yang dituju, data yang dikirimkan (bila ada), dan informasi lain mengenai permintaan tersebut.
 
-Untuk mendapatkan nilai method dari request, gunakanlah properti request.method seperti ini:
 
+Data di body didapatkan dengan teknik stream, seperti yang sudah kita ketahui, teknik ini memanfaatkan EventEmitter untuk mengirimkan bagian-bagian datanya. Dalam kasus http.clientRequest event data dan end-lah yang digunakan untuk mendapatkan data body.
+
+
+Berikut adalah contoh bagaimana mendapatkan data body:
 ```
 const requestListener = (request, response) => {
-    const method = request.method;
+    let body = [];
+ 
+    request.on('data', (chunk) => {
+        body.push(chunk);
+    });
+ 
+    request.on('end', () => {
+        body = Buffer.concat(body).toString();
+    });
 };
-```
-
-Properti method bernilai tipe method dalam bentuk string. Nilainya dapat berupa “GET”, “POST”, “PUT”, atau method lainnya sesuai dengan yang client gunakan ketika melakukan permintaan. Dengan memiliki nilai method, kita bisa memberikan respons berbeda berdasarkan tipe method-nya.
 
 ```
-const requestListener = (request, response) => {
-    const { method } = request;
- 
-    if(method === 'GET') {
-        // response ketika GET
-    }
- 
-    if(method === 'POST') {
-        // response ketika POST
-    }
- 
-    // Anda bisa mengevaluasi tipe method lainnya
-};
-```
 
-Sekali lagi, tidak hanya properti method, objek request kaya akan properti dan fungsi lain di dalamnya. Anda dapat mengeksplorasi properti atau fungsi lainnya pada halaman dokumentasi Node.js tentang HTTP Client Request.
+Mari kita bedah kodenya.
+
+- Pertama, kita deklarasikan variabel body dan inisialisasikan nilainya dengan array kosong. Ini berfungsi untuk menampung buffer pada stream. 
+
+- Lalu, ketika event data terjadi pada request, kita isi array body dengan chunk (potongan data) yang dibawa callback function pada event tersebut.
+
+- Terakhir, ketika proses stream berakhir, maka event end akan terbangkitkan. 
+Di sinilah kita mengubah variabel body yang sebelumnya menampung buffer menjadi data sebenarnya dalam bentuk string melalui perintah Buffer.concat(body).toString().
+
+
+
+
